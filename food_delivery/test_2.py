@@ -26,10 +26,11 @@ svc = DispatchService(order_repo, courier_repo, routes, bus)
 
 order_repo.save(o)
 courier_repo.save(Courier("c1", GeoPoint(0, 0), "Available"))
+service_area = ServiceArea(99, restaurant_location=GeoPoint(0, 0))
 
-assert ServiceArea(99, center=GeoPoint(0, 0)).contains(GeoPoint(0, 0)) is True
+assert service_area.contains(GeoPoint(0, 0)) is True
 
-svc.assign_best_courier("o1", ServiceArea(99, center=GeoPoint(0, 0)))
+svc.assign_best_courier("o1", service_area)
 
 assert (
     o.state == "Dispatched"

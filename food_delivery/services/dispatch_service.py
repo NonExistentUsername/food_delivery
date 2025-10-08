@@ -4,6 +4,7 @@ from food_delivery.repositories.courier_repository import CourierRepository
 from food_delivery.services.event_bus import EventBus
 from food_delivery.services.route_estimator import RouteEstimator
 from food_delivery.models.service_area import ServiceArea
+from datetime import timedelta
 
 
 class DispatchService:
@@ -27,13 +28,23 @@ class DispatchService:
 
         assert candidates, "No available couriers"
 
+        # Choose best by ETA to restaurant
         best = min(
             candidates,
             key=lambda c: self.route_estimator.estimate_eta(
-                c.location, order.address.geo
+                c.location, service_area.restaurant_location
             ),
         )
-        eta = self.route_estimator.estimate_eta(best.location, order.address.geo)
+        # Eta from courier to restaurant + restaurant to customer
+        eta = (
+            self.route_estimator.estimate_eta(
+                best.location, service_area.restaurant_location
+            )
+            + self.route_estimator.estimate_eta(
+                service_area.restaurant_location, order.address.geo
+            )
+            + timedelta(minutes=2)
+        )  # 2 min buffer for pickup
 
         assert order.can_dispatch(eta), "Would miss SLA"
 

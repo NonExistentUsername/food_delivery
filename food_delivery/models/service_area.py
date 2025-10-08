@@ -6,8 +6,13 @@ from food_delivery.services.utils import haversine
 @dataclass(frozen=True)
 class ServiceArea:
     radius_km: float
-    center: GeoPoint
+    restaurant_location: GeoPoint
 
     def contains(self, point: GeoPoint) -> bool:
-        distance = haversine(self.center.lat, self.center.lon, point.lat, point.lon)
+        distance = haversine(
+            self.restaurant_location.lat,
+            self.restaurant_location.lon,
+            point.lat,
+            point.lon,
+        )
         return distance <= self.radius_km

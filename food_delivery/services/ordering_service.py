@@ -3,6 +3,7 @@ from food_delivery.models.order import Order
 from food_delivery.repositories.order_repository import OrderRepository
 from food_delivery.services.event_bus import EventBus
 from food_delivery.models.order_item import OrderItem
+from food_delivery.models.address import Address
 
 
 class OrderingService:
@@ -18,16 +19,16 @@ class OrderingService:
         order_id: str,
         restaurant_id: str,
         items: list[OrderItem],
-        address: str,
+        address: Address,
         menu: set[int],
         promised_by: datetime,
-        now: datetime,
     ) -> str:
         o = Order(order_id, restaurant_id, [], address, "Draft", promised_by)
+
         for it in items:
             o.add_item(it, menu)
 
-        evt = o.place(now)
+        evt = o.place()
         self.orders.save(o)
         self.event_bus.publish(evt)
 
